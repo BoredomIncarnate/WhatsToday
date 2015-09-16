@@ -1,0 +1,64 @@
+#!/usr/local/bin/python
+
+from urllib import urlopen
+from sys import argv
+import json
+import sys
+import time
+
+args        = argv
+zip         = ''
+city        = '' # todo: add capability to type in a city instead of a zip
+
+if len(args) == 1:
+	print "No arguements provided. Please type 'today -h' for help."
+	exit()
+if args[1] == '-z':
+	if len(args) == 2:
+		print "No zip code provided. Please use the format 'today -z XXXXX'"
+		exit()
+	else:
+		zip = args[2]
+elif args[1] == '-c':
+	print "-c for city is currently not supported.\nPlease use the format: today -z XXXXX"
+	exit()
+elif args[1] == '-h':
+	print "today currently only supports US zip codes. We apologize for the inconvience to international users."
+	print "Options and Arguements:"
+	print "\t-h : help"
+	print "\t-z : zip code"
+	print "\t-c : city (currently not supported)"
+	print "\t-d : detailed (Wind Speed and Humidity)"
+	print "Formats:"
+	print "\ttoday -z <US zip code>"
+	print "\ttoday -c <city name>"
+	print "\ttoday -z|-c <value> -d"
+	exit()
+else:
+	print "Unsupported flag. type 'today -h' for help and list of supported flags."
+	exit()
+
+url         = urlopen('http://api.openweathermap.org/data/2.5/weather?zip=' + zip + ',us&units=imperial').read();
+result      = json.loads(url)
+city        = result['name']
+typeWeather = result['weather'][0]['main']
+descWeather = result['weather'][0]['description']
+temp        = result['main']['temp']
+windSpeed   = result['wind']['speed']
+humidity    = result['main']['humidity']
+msg         = "City: {}\nWeather: {}\nMore info: {}\nTemp: {}".format(city, typeWeather, descWeather, temp)
+
+if len(args) == 4:
+	if(args[3] == '-d'):
+		msg += '\nWind Speed: {} mi/h\nHumidity: {}%'.format(str(windSpeed), str(humidity))
+ 
+# prints each chunk of the string with a small delay
+# format:
+#	City:      London
+#	Weather:   Rain
+#	More Info: Heavy and Intense Rain
+#	Temp:      80 F
+
+for c in msg:
+	sys.stdout.write(c)
+	time.sleep(0.02)
